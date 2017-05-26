@@ -7,11 +7,14 @@
 @Time: 2017/5/25 14:35
 @Description: 铜价和PCB价格相关性分析
 """
-from data_loading import read_co_price, read_pcb_price
+import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import datetime
+from scipy.stats.stats import pearsonr
+
+from data_loading import read_co_price, read_pcb_price
 
 
 def data_visualization(co_price, pcb_price):
@@ -37,13 +40,27 @@ def data_visualization(co_price, pcb_price):
     plt.show()
 
 
+def co_price_pre_process(co_price):
+    """
+    为便于跟PCB价格进行对比，将非交易日的铜价设置为前后两个交易日收盘价的均值
+    """
+    min_date = min(co_price.index)
+    max_date = max(co_price.index)
+    date_range = pd.date_range(min_date, max_date)
+    # 构造一个用于保存每天价格数据的DataFrame
+    df = pd.DataFrame(np.full((len(date_range), 1), np.nan), index=date_range, columns=['price'])
+    df.update(co_price)
+    # 通过线性插值填补缺失值
+    return df.interpolate()
+
+
 def pcb_price_pre_process(pcb_price):
     """
     提取pcb每天的价格 
     """
     # 获取报价日期范围
     min_date = pcb_price.valid_date[0]
-    max_date = pcb_price.invalid_date[len(pcb_price)-1]
+    max_date = pcb_price.invalid_date[len(pcb_price) - 1]
     date_range = pd.date_range(min_date, max_date)
     # 构造一个用于保存每天价格数据的DataFrame
     df = pd.DataFrame(np.zeros(len(date_range)), index=date_range, columns=['price'])
@@ -63,7 +80,8 @@ def pcb_price_pre_process(pcb_price):
         current_start_date = row.valid_date
         current_max_date = max(pre_end_date, current_start_date)
         # 将上一条的valid_date至max(上一条的max, 当前条的valid_date)的价格设置为上一条记录的price
-        df.set_value(pd.date_range(pre_start_date, current_max_date if current_max_date < max_date else max_date), 'price', pre_price)
+        df.set_value(pd.date_range(pre_start_date, current_max_date if current_max_date < max_date else max_date),
+                     'price', pre_price)
         # 更新当前记录至上一条记录的变量中
         pre_start_date = current_start_date
         pre_end_date = row.invalid_date
@@ -73,6 +91,9 @@ def pcb_price_pre_process(pcb_price):
 
 
 def filter_data_by_date(df, start_date, end_date):
+    """
+    根据开始日期和截止日期对dataframe进行切片
+    """
     if start_date not in df.index:
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         start_date = start_date - datetime.timedelta(days=1)
@@ -82,13 +103,40 @@ def filter_data_by_date(df, start_date, end_date):
     return df[start_date:end_date]
 
 
+def cor_analysis(co_price, pcb_price):
+    """
+    铜价和PCB价格相关性分析 
+    """
+    cor_draw(co_price, pcb_price)
+    print(pearsonr(co_price.values, pcb_price.values))
+
+
+def cor_draw(co_price, pcb_price):
+    """
+    横坐标：铜价
+    纵坐标：PCB价格
+    """
+    plt.figure(figsize=(10, 6))
+    plt.title('the correlation of copper price & pcb price')
+    plt.xlabel('copper price')
+    plt.ylabel('pcb price')
+
+    plt.plot(co_price, pcb_price, '-', label='correlation')
+
+    plt.legend(loc='upper right')
+
+    plt.show()
+
+
 if __name__ == '__main__':
     # 可视化数据的日期范围
     # START_DATE = '2002-01-07'
-    START_DATE = '2014-05-31'
+    START_DATE = '2014-10-23'
     END_DATA = '2017-05-24'
     # 读取铜价数据
     co_price_data = read_co_price()
+    # 对铜价数据进行缺失值填充
+    co_price_data = co_price_pre_process(co_price_data)
     # 过滤出可视化日期范围内的数据
     co_price_data = filter_data_by_date(co_price_data, START_DATE, END_DATA)
     # 读取PCB报价数据
@@ -97,5 +145,7 @@ if __name__ == '__main__':
     pcb_price_data = pcb_price_pre_process(pcb_price_data)
     # 过滤出可视化日期范围内的数据
     pcb_price_data = filter_data_by_date(pcb_price_data, START_DATE, END_DATA)
+    # 将两者进行相关性分析
+    cor_analysis(co_price_data/100, pcb_price_data)
     # 可视化铜价历史数据及PCB价格历史数据
     data_visualization(co_price_data, pcb_price_data)
