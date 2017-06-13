@@ -6,7 +6,7 @@ This is an open source project aims at making a prediction of copper price using
 
 The motivation of launching this project is that copper is a kind of important raw material of some midstream and downstream materials, whose price is of great relevance to copper price. Thus a high accuracy of copper price prediction can to some extent providing purchasing decisions for the purchasing agent.
 
-Here is a comparison of the fluctuation of the price of cooper and a downstram material:
+Here is a comparison of the fluctuation of the price of cooper and a kind of downstream material:
 
 ![image](https://github.com/liyinwei/res/raw/master/2017/copper_price_readme_1.png)
 
@@ -28,7 +28,7 @@ Here is a comparison of the fluctuation of the price of cooper and a downstram m
 - [pcb](https://github.com/liyinwei/copper_price_forecast/tree/master/pcb): correlation analysis of copper and a downstream material price
 
 # Running
-There is a main method in each python file so you can run it easily and the following is a sample of run result of the [mlp](https://github.com/liyinwei/copper_price_forecast/tree/master/mlp) method:
+There is a main method in each python file so you can run it easily and the following is a sample of predict result of the [mlp](https://github.com/liyinwei/copper_price_forecast/tree/master/mlp) method:
 
 ![image](https://github.com/liyinwei/res/raw/master/2017/copper_price_readme_2.png)
 
