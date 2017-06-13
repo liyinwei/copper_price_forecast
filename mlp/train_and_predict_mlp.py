@@ -8,16 +8,15 @@
 @Description: 采用MLP进行铜价预测
 """
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
+from common.model_visualization import model_visualization
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 
-from data_loading import read_co_data
-from feature_engineering import feature_engineering
-from model_evaluation import model_evaluation
-from model_visualization import model_visualization
+from common.data_loading import read_co_data
+from common.model_evaluation import model_evaluation
+from mlp.feature_engineering import feature_engineering
 
 if __name__ == '__main__':
     # 读取原始数据

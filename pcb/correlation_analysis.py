@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats.stats import pearsonr
 
-from data_loading import read_co_price, read_pcb_price
+from common.data_loading import read_co_price, read_pcb_price
 
 
 def data_visualization(co_price, pcb_price):
@@ -28,12 +28,16 @@ def data_visualization(co_price, pcb_price):
     y_pcb_values = pcb_price.price
 
     plt.figure(figsize=(10, 6))
-    plt.title('history copper price(100rmb/t) vs. pcb price(rmb/sq.m.)')
+    plt.title('copper price(100rmb/t) vs. pcb price(rmb/sq.m.)')
     plt.xlabel('date')
     plt.ylabel('history price')
 
     plt.plot(x_co_values, y_co_values, '-', label='co price')
     plt.plot(x_pcb_values, y_pcb_values, '-', label='pcb price')
+    plt.axvline('2015-04-23', linewidth=1, color='r', linestyle='dashed')
+    plt.axvline('2015-10-23', linewidth=1, color='r', linestyle='dashed')
+    plt.axvline('2016-04-23', linewidth=1, color='r', linestyle='dashed')
+    plt.axvline('2016-10-23', linewidth=1, color='r', linestyle='dashed')
 
     plt.legend(loc='upper right')
 
@@ -132,6 +136,8 @@ if __name__ == '__main__':
     # 可视化数据的日期范围
     # START_DATE = '2002-01-07'
     START_DATE = '2014-10-23'
+    #START_DATE = '2016-07-01'
+    # END_DATA = '2016-08-01'
     END_DATA = '2017-05-24'
     # 读取铜价数据
     co_price_data = read_co_price()
@@ -146,6 +152,6 @@ if __name__ == '__main__':
     # 过滤出可视化日期范围内的数据
     pcb_price_data = filter_data_by_date(pcb_price_data, START_DATE, END_DATA)
     # 将两者进行相关性分析
-    cor_analysis(co_price_data/100, pcb_price_data)
+    cor_analysis(co_price_data / 100, pcb_price_data)
     # 可视化铜价历史数据及PCB价格历史数据
     data_visualization(co_price_data, pcb_price_data)

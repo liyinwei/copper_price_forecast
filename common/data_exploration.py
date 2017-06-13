@@ -8,8 +8,9 @@
 @Description: 铜价历史价格可视化
 """
 
-from data_loading import read_co_data
 import matplotlib.pyplot as plt
+
+from common.data_loading import read_co_data
 
 
 def data_visualization(co_price):
@@ -36,5 +37,3 @@ if __name__ == '__main__':
     co_price_data = read_co_data()
     # 可视化铜价历史数据及PCB价格历史数据
     data_visualization(co_price_data)
-
-

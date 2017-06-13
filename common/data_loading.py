@@ -5,12 +5,14 @@
 @Author: liyinwei
 @E-mail: coridc@foxmail.com
 @Time: 2017/5/12 9:54
-@Description: 数据加载
+@Description: 铜价和PCB价格相关性分析
 """
 
 import mysql.connector
 import pandas as pd
-import const
+
+from common import const
+
 
 def read_data_from_mysql(sql):
     """
@@ -39,6 +41,22 @@ def read_co_data():
     # 添加数据索引
     index = pd.MultiIndex.from_tuples(tuples, names=['id', 'date'])
     df.index = index
+    print("loading data finished.")
+    return df
+
+
+def read_co_data_rnn():
+    """
+    获取沪期铜主力历史交易数据
+    """
+    print("start loading data...")
+    sql = const.CO_PRICE_SQL_RNN
+    df = read_data_from_mysql(sql)
+    # tuples = list(zip(*[range(len(df)), df.price_date]))
+    # # 添加数据索引
+    # index = pd.MultiIndex.from_tuples(tuples, names=['id', 'date'])
+    # df.index = index
+    df.index = pd.DatetimeIndex(df.price_date)
     print("loading data finished.")
     return df
 

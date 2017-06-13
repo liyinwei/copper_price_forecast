@@ -22,8 +22,8 @@ def model_visualization(actual, predict):
     plt.ylabel('actual price vs. predict price')
     plt.grid(x)
 
-    plt.plot(x, actual, 'x-', label='actual price')
-    plt.plot(x, predict, '+-', label='predict price')
+    plt.plot(x, actual, '-', label='actual price')
+    plt.plot(x, predict, '-', label='predict price')
 
     plt.legend(loc='upper right')
 
