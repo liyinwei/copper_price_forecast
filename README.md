@@ -4,7 +4,7 @@ This is an open source project aims at making a prediction of copper price using
 
 # Motivation
 
-The motivation of launching this project is that copper is a kind of important raw material of some midstream and downstream materials, whose price is of great relevance to copper price. 
+The motivation of launching this project is that copper is a kind of important raw material of some midstream and downstream materials, whose price is of great relevance to copper price. Thus a high accuracy of copper price prediction can to some extent providing purchasing decisions for the purchasing agent.
 
 Here is a comparison of the fluctuation of the price of cooper and a downstram material:
 
