@@ -35,7 +35,7 @@ There is a main method in each python file so you can run it easily and the foll
 
 # Authors
 - [Yinwei Li](https://github.com/liyinwei)
-  - **weichat**: coridc
+  - **wechat**: coridc
   - **email**: 251469031@qq.com
 
 *Don't hesitate to contact me on any topics about this project at your convenience.*
