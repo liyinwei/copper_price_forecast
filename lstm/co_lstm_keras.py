@@ -10,13 +10,13 @@
 
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from keras.layers.core import Dense, Activation, Dropout
+from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
-from sklearn import preprocessing
+from sklearn.preprocessing import MinMaxScaler
 
 from common.data_loading import read_co_data_rnn
 from common.model_evaluation import model_evaluation
@@ -106,36 +106,68 @@ def load_data():
     min_date = min(raw_data.price_date)
     max_date = max(raw_data.price_date)
     date_range = pd.date_range(min_date, max_date)
+
     # 构造一个用于保存每天价格的DataFrame
     data = pd.DataFrame(np.full((len(date_range), len(Conf.FIELDS)), np.nan), index=date_range, columns=Conf.FIELDS)
     data.update(raw_data)
+
     # 采用线性插值对缺失值进行填充
     data = data.interpolate()
 
-    # 对特征进行归一化
-    min_max_scalaer = preprocessing.MinMaxScaler()
-    # 将归一化后的特征更新到data中
-    # data.iloc[:, :-1] = min_max_scalaer.fit_transform(data.values[::, :-1])
-    # 训练数据归一化
-    data = min_max_scalaer.fit_transform(data.values)
+    # 归一化处理
+    data = normalise_data(data)
 
-    result = []
+    # 将原始数据组装成时间序列数据
+    seq_features = []
     for i in range(len(data) - Conf.SEQ_LEN):
-        result.append(data[i: i + Conf.SEQ_LEN])
+        seq_features.append(data[i: i + Conf.SEQ_LEN])
 
     # 训练数据集数量
     train_samples_num = int(len(data) * Conf.TRAIN_SAMPLES_RATE)
 
-    _X_train = np.array(result[:train_samples_num])
-    _X_test = np.array(result[train_samples_num:])
+    # 提取_X_train，_X_test，_y_train，_y_test
+    _X_train = np.array(seq_features[:train_samples_num])
+    _X_test = np.array(seq_features[train_samples_num:])
     _y_train = np.array(data[:, -1]).T[Conf.SEQ_LEN: train_samples_num + Conf.SEQ_LEN]
     _y_test = np.array(data[:, -1]).T[train_samples_num + Conf.SEQ_LEN:]
 
-    print(len(data), len(result), len(_X_train), len(_X_test), len(_y_train), len(_y_test))
+    print(len(data), len(seq_features), len(_X_train), len(_X_test), len(_y_train), len(_y_test))
+    _y_train = _y_train[:, np.newaxis]
+    _y_test = _y_test[:, np.newaxis]
+    print(_X_train.shape, _X_test.shape, _y_train.shape, _y_test.shape)
 
-    print(_X_train.shape)
-    print(_X_test.shape)
-    return [min_max_scalaer, _X_train, _y_train, _X_test, _y_test]
+    return [_X_train, _y_train, _X_test, _y_test]
+
+
+def normalise_data(data):
+    # 对数据进行归一化
+    min_max_scalaer = MinMaxScaler()
+    return min_max_scalaer.fit_transform(data.values)
+
+
+def normalise_y(y):
+    scaler = MinMaxScaler()
+    return scaler.fit_transform(y)
+    # return np.array([(float(p) / float(y[0]) - 1) for p in y]).T
+
+
+def inverse_normalise_y(scaler, scalerd_y):
+    return scaler.inverse_transform(scalerd_y)
+
+
+def normalise_X(data):
+    """
+    数据标准化
+    """
+    normalized_data = []
+    for seq in data:
+        # data是一个列表，每个元素seq是一个SEQ_LEN * NUM_OF_FEATURES的DataFrame对象
+        for item in seq.values.T:
+            if item[0] == 0:
+                item[0] = 1
+        normalized_data.append(
+            np.array([(p.astype('float64') / seq.values[0].astype('float64') - 1) for p in seq.values]))
+    return np.array(normalized_data)
 
 
 def build_model():
@@ -151,6 +183,7 @@ def build_model():
     model.add(Dropout(0.2))
 
     model.add(Dense(units=Conf.LAYERS[3]))
+    # model.add(BatchNormalization(weights=None, epsilon=1e-06, momentum=0.9))
     model.add(Activation("tanh"))
 
     start = time.time()
@@ -170,31 +203,29 @@ def predict_by_day(model, data):
     return predict
 
 
-def inverse_trans(scaler, data):
-    """
-    将y反归一化
-    """
-    return data * ((scaler.data_max_ - scaler.data_min_)[-1]) + scaler.data_min_[-1]
-
-
-if __name__ == '__main__':
+def main():
     global_start_time = time.time()
     print('> Loading data... ')
-    mm_scaler, X_train, y_train, X_test, y_test = load_data()
+    # mm_scaler, X_train, y_train, X_test, y_test = load_data()
+    X_train, y_train, X_test, y_test = load_data()
     print('> Data Loaded. Compiling...')
 
-    rnn = build_model()
-    rnn.fit(X_train, y_train, batch_size=Conf.BATCH_SIZE, epochs=Conf.EPOCHS, validation_split=0.05)
-
-    predicted = predict_by_day(rnn, X_test)
+    model = build_model()
+    print(model.summary())
+    model.fit(X_train, y_train, batch_size=Conf.BATCH_SIZE, epochs=Conf.EPOCHS, shuffle=True, validation_split=0.05)
+    predicted = predict_by_day(model, X_test)
 
     print('Training duration (s) : ', time.time() - global_start_time)
 
-    predicted = inverse_trans(mm_scaler, predicted)
-    y_test = inverse_trans(mm_scaler, y_test)
+    # predicted = inverse_trans(mm_scaler, predicted)
+    # y_test = inverse_trans(mm_scaler, y_test)
 
     # 模型评估
     model_evaluation(pd.DataFrame(predicted), pd.DataFrame(y_test), None)
 
     # 预测结果可视化
     model_visualization(y_test, predicted)
+
+
+if __name__ == '__main__':
+    main()
