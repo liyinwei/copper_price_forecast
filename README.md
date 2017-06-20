@@ -28,10 +28,15 @@ Here is a comparison of the fluctuation of the price of cooper and a kind of dow
 - [pcb](https://github.com/liyinwei/copper_price_forecast/tree/master/pcb): correlation analysis of copper and a downstream material price
 
 # Running
-There is a main method in each python file so you can run it easily and the following is a sample of predict result of the [mlp](https://github.com/liyinwei/copper_price_forecast/tree/master/mlp) method:
+There is a main method in each python file so you can run it easily.
+
+the following is a sample of predict result of the [mlp](https://github.com/liyinwei/copper_price_forecast/tree/master/mlp) method:
 
 ![image](https://github.com/liyinwei/res/raw/master/2017/copper_price_readme_2.png)
 
+while the following is a sample of predict result of the [lstm](https://github.com/liyinwei/copper_price_forecast/tree/master/lstm) method with epochs=500:
+
+![image](https://github.com/liyinwei/res/raw/master/2017/copper_price_readme_3.png)
 
 # Authors
 - [Yinwei Li](https://github.com/liyinwei)
