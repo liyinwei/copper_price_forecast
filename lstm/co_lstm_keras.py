@@ -17,6 +17,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 from keras.callbacks import History
+from keras.layers.advanced_activations import PReLU, LeakyReLU
 from sklearn.preprocessing import MinMaxScaler
 
 from common.data_loading import read_co_data_rnn
@@ -186,6 +187,9 @@ def build_model():
     model.add(Dense(units=Conf.LAYERS[3]))
     # model.add(BatchNormalization(weights=None, epsilon=1e-06, momentum=0.9))
     model.add(Activation("tanh"))
+    # act = PReLU(alpha_initializer='zeros', weights=None)
+    # act = LeakyReLU(alpha=0.3)
+    # model.add(act)
 
     start = time.time()
     model.compile(loss="mse", optimizer="rmsprop")
