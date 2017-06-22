@@ -27,6 +27,9 @@ Here is a comparison of the fluctuation of the price of cooper and a kind of dow
 - [lstm](https://github.com/liyinwei/copper_price_forecast/tree/master/lstm): predict copper price using keras.layers.recurrent.LSTM
 - [pcb](https://github.com/liyinwei/copper_price_forecast/tree/master/pcb): correlation analysis of copper and a downstream material price
 
+# Data
+You can visit the [spiders project](https://github.com/liyinwei/spiders) and run [shfe](https://github.com/liyinwei/spiders/tree/master/shfe) to crawling copper future price from [Shanghai Futures Exchange](http://www.shfe.com.cn/).
+
 # Running
 There is a main method in each python file so you can run it easily.
 
