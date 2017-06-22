@@ -16,11 +16,12 @@ from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
+from keras.callbacks import History
 from sklearn.preprocessing import MinMaxScaler
 
 from common.data_loading import read_co_data_rnn
 from common.model_evaluation import model_evaluation
-from common.model_visualization import model_visualization
+from common.model_visualization import model_visualization, plot_loss
 
 
 class Conf:
@@ -85,7 +86,7 @@ class Conf:
     # 时间序列长度
     SEQ_LEN = 50
     # epochs大小
-    EPOCHS = 10
+    EPOCHS = 50
     # 批大小
     BATCH_SIZE = 500
     # 测试训练集比例
@@ -212,7 +213,18 @@ def main():
 
     model = build_model()
     print(model.summary())
-    model.fit(X_train, y_train, batch_size=Conf.BATCH_SIZE, epochs=Conf.EPOCHS, shuffle=True, validation_split=0.05)
+
+    # keras.callbacks.History记录每个epochs的loss及val_loss
+    hist = History()
+    model.fit(X_train, y_train, batch_size=Conf.BATCH_SIZE, epochs=Conf.EPOCHS, shuffle=True,
+              validation_split=0.05, callbacks=[hist])
+
+    # 控制台打印历史loss及val_loss
+    print(hist.history['loss'])
+    print(hist.history['val_loss'])
+
+    # 可视化历史loss及val_loss
+    plot_loss(hist.history['loss'], hist.history['val_loss'])
     predicted = predict_by_day(model, X_test)
 
     print('Training duration (s) : ', time.time() - global_start_time)
