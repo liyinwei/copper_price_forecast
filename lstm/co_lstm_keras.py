@@ -208,6 +208,23 @@ def predict_by_day(model, data):
     return predict
 
 
+def predict_by_days(model, data):
+    """
+    预测未来所有价格，这种方法仅对特征只有一个价格时有效，因为SQL_LEN+1天的非价格特征无法提前知道）
+    """
+    # 用于保存预测结果
+    predict_seq = []
+    current_predict = None
+    for i in range(len(data)):
+        # 当前用于预测的样本
+        current_x = data[i]
+        if i > 0:
+            current_x[-1, -1] = current_predict
+        current_predict = model.predict(current_x[np.newaxis, :, :])[0, 0]
+        predict_seq.append(current_predict)
+    return predict_seq
+
+
 def main():
     global_start_time = time.time()
     print('> Loading data... ')
@@ -229,6 +246,7 @@ def main():
 
     # 可视化历史loss及val_loss
     plot_loss(hist.history['loss'], hist.history['val_loss'])
+    # predicted = predict_by_days(model, X_test, 20)
     predicted = predict_by_day(model, X_test)
 
     print('Training duration (s) : ', time.time() - global_start_time)
