@@ -111,15 +111,15 @@ def predict_point_by_point(model, data):
     return predict
 
 
-def predict_sequences_multiple(model, data, window_size, prediction_len):
+def predict_sequences_multiple(model, data, window_size, predict_len):
     """
     每次预测Conf.SEQ_LEN步
     """
     prediction_seqs = []
-    for i in range(int(len(data) / prediction_len)):
-        curr_frame = data[i * prediction_len]
+    for i in range(int(len(data) / predict_len)):
+        curr_frame = data[i * predict_len]
         predicted = []
-        for j in range(prediction_len):
+        for j in range(predict_len):
             predicted.append(model.predict(curr_frame[np.newaxis, :, :])[0, 0])
             curr_frame = curr_frame[1:]
             curr_frame = np.insert(curr_frame, [window_size - 1], predicted[-1], axis=0)
@@ -140,21 +140,21 @@ def predict_sequence_full(model, data, window_size):
     return predicted
 
 
-def plot_results(predicted_data, true_data):
+def plot_results(y_true, y_pred):
     fig = plt.figure(facecolor='white')
     ax = fig.add_subplot(111)
-    ax.plot(true_data, label='True Data')
-    plt.plot(predicted_data, label='Prediction')
+    ax.plot(y_true, label='True Data')
+    plt.plot(y_pred, label='Prediction')
     plt.legend()
     plt.show()
 
 
-def plot_results_multiple(predicted_data, true_data, prediction_len):
+def plot_results_multiple(y_true, y_pred, predict_len):
     fig = plt.figure(facecolor='white')
     ax = fig.add_subplot(111)
-    ax.plot(true_data, label='True Data')
-    for i, data in enumerate(predicted_data):
-        padding = [None for p in range(i * prediction_len)]
+    ax.plot(y_true, label='True Data')
+    for i, data in enumerate(y_pred):
+        padding = [None for p in range(i * predict_len)]
         plt.plot(padding + data, label='Prediction')
         plt.legend()
     plt.show()
@@ -175,20 +175,21 @@ def main():
     model.fit(X_train, y_train, batch_size=Conf.BATCH_SIZE, epochs=Conf.EPOCHS, validation_split=0.05)
 
     # 预测一步
-    # predicted = predict_point_by_point(model, X_test)
+    predicted = predict_point_by_point(model, X_test)
     # 预测所有步
     # predicted = predict_sequence_full(model, X_test, Conf.SEQ_LEN)
     # 预测Conf.SEQ_LEN步
-    predicted = predict_sequences_multiple(model, X_test, Conf.SEQ_LEN, 50)
+    # predicted = predict_sequences_multiple(model, X_test, Conf.SEQ_LEN, 50)
 
     print('Training duration (s) : ', time.time() - global_start_time)
 
     # 预测一步及所有步
-    # plot_results(predicted, y_test)
+    plot_results(y_test, predicted)
     # 预测Conf.SEQ_LEN步
-    plot_results_multiple(predicted, y_test, Conf.SEQ_LEN)
+    # plot_results_multiple(y_test, predicted, Conf.SEQ_LEN)
 
-    model_evaluation(pd.DataFrame(y_test), pd.DataFrame(predicted), None)
+    # 该模型评估方法不适合多步预测（适合所有步）
+    model_evaluation(pd.DataFrame(y_test), pd.DataFrame(predicted))
 
 
 if __name__ == '__main__':
