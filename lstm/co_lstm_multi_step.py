@@ -21,8 +21,8 @@ from keras.layers.advanced_activations import PReLU, LeakyReLU
 from sklearn.preprocessing import MinMaxScaler
 
 from common.data_loading import read_co_data_rnn
-from common.model_evaluation import model_evaluation
-from common.model_visualization import model_visualization, plot_loss
+from common.model_evaluation import model_evaluation_multi_step
+from common.model_visualization import model_visulaization_multi_step, plot_loss
 
 
 class Conf:
@@ -86,14 +86,16 @@ class Conf:
 
     # 时间序列长度
     SEQ_LEN = 50
+    # 预测步长
+    STEP_LEN = 25
     # epochs大小
-    EPOCHS = 50
+    EPOCHS = 1
     # 批大小
     BATCH_SIZE = 500
     # 测试训练集比例
     TRAIN_SAMPLES_RATE = 0.8
     # 网络形状
-    LAYERS = [len(FIELDS), SEQ_LEN, 100, 1]
+    LAYERS = [len(FIELDS), SEQ_LEN, 100, STEP_LEN]
 
 
 def load_data():
@@ -116,7 +118,7 @@ def load_data():
     # 采用线性插值对缺失值进行填充
     data = data.interpolate()
 
-    # 归一化处理
+    # 归一化处理(5617, 18)
     data = normalise_data(data)
 
     # 将原始数据组装成时间序列数据
@@ -125,17 +127,32 @@ def load_data():
         seq_features.append(data[i: i + Conf.SEQ_LEN])
 
     # 训练数据集数量
-    train_samples_num = int(len(data) * Conf.TRAIN_SAMPLES_RATE)
+    train_samples_num = int((len(data) - Conf.STEP_LEN) * Conf.TRAIN_SAMPLES_RATE)
+
+    pd.DataFrame(data).to_excel('data.xlsx')
 
     # 提取_X_train，_X_test，_y_train，_y_test
+    # (4477, 50, 18)
     _X_train = np.array(seq_features[:train_samples_num])
-    _X_test = np.array(seq_features[train_samples_num:])
-    _y_train = np.array(data[:, -1]).T[Conf.SEQ_LEN: train_samples_num + Conf.SEQ_LEN]
-    _y_test = np.array(data[:, -1]).T[train_samples_num + Conf.SEQ_LEN:]
+    # (1090, 50, 18)
+    _X_test = np.array(seq_features[train_samples_num: -Conf.STEP_LEN])
+    # (4497,)
+    _y_train_raw = np.array(data[:, -1]).T[Conf.SEQ_LEN: train_samples_num + Conf.SEQ_LEN + Conf.STEP_LEN]
+    # (1090,)
+    _y_test_raw = np.array(data[:, -1]).T[train_samples_num + Conf.SEQ_LEN:]
+
+    _y_train = []
+    _y_test = []
+
+    for i in range(len(_y_train_raw) - Conf.STEP_LEN):
+        _y_train.append(_y_train_raw[i: i + Conf.STEP_LEN])
+
+    for i in range(len(_y_test_raw) - Conf.STEP_LEN):
+        _y_test.append(_y_test_raw[i: i + Conf.STEP_LEN])
 
     print(len(data), len(seq_features), len(_X_train), len(_X_test), len(_y_train), len(_y_test))
-    _y_train = _y_train[:, np.newaxis]
-    _y_test = _y_test[:, np.newaxis]
+    _y_train = np.array(_y_train)
+    _y_test = np.array(_y_test)
     print(_X_train.shape, _X_test.shape, _y_train.shape, _y_test.shape)
 
     return [_X_train, _y_train, _X_test, _y_test]
@@ -203,8 +220,8 @@ def predict_by_day(model, data):
     """
     predict = model.predict(data)
     print(predict.shape)
-    predict = np.reshape(predict, (len(predict),))
-    print(predict.shape)
+    # predict = np.reshape(predict, (len(predict),))
+    # print(predict.shape)
     return predict
 
 
@@ -255,10 +272,10 @@ def main():
     # y_test = inverse_trans(mm_scaler, y_test)
 
     # 模型评估
-    model_evaluation(pd.DataFrame(predicted), pd.DataFrame(y_test), None)
+    model_evaluation_multi_step(pd.DataFrame(predicted), pd.DataFrame(y_test))
 
     # 预测结果可视化
-    model_visualization(y_test, predicted)
+    model_visulaization_multi_step(y_test, predicted)
 
 
 if __name__ == '__main__':
