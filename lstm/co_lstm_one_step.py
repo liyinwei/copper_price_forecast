@@ -255,7 +255,7 @@ def main():
     # y_test = inverse_trans(mm_scaler, y_test)
 
     # 模型评估
-    model_evaluation(pd.DataFrame(predicted), pd.DataFrame(y_test), None)
+    model_evaluation(pd.DataFrame(predicted), pd.DataFrame(y_test))
 
     # 预测结果可视化
     model_visualization(y_test, predicted)
