@@ -129,8 +129,6 @@ def load_data():
     # 训练数据集数量
     train_samples_num = int((len(data) - Conf.STEP_LEN) * Conf.TRAIN_SAMPLES_RATE)
 
-    pd.DataFrame(data).to_excel('data.xlsx')
-
     # 提取_X_train，_X_test，_y_train，_y_test
     # (4477, 50, 18)
     _X_train = np.array(seq_features[:train_samples_num])
