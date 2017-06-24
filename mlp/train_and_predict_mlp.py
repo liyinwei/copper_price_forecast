@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # 将结果写入文件
     # pd.DataFrame(y_pred).to_excel('y_pred.xlsx')
     # 模型评估
-    model_evaluation(y_test, y_pred, fed_data)
+    model_evaluation(y_test, y_pred)
     # 可视化
     model_visualization(y_test, y_pred)
 
