@@ -7,8 +7,9 @@
 @Time: 2017/5/15 14:23
 @Description: TODO
 """
-import matplotlib.pyplot as plt
 import math
+
+import matplotlib.pyplot as plt
 
 
 def model_visualization(y_true, y_pred):
@@ -39,25 +40,26 @@ def model_visulaization_multi_step(y_true, y_pred):
     y_pred = y_pred.T
 
     step_len = len(y_true)
-    fig_row_no = int(math.sqrt(step_len))
-    fig_col_no = fig_row_no + 1 if step_len > fig_row_no * fig_row_no else fig_row_no
+    # 计算显示step_len个子图所需的行数和列数
+    fig_row_num = int(math.sqrt(step_len))
+    fig_col_num = math.ceil(float(step_len) / fig_row_num) if step_len > fig_row_num * fig_row_num else fig_row_num
 
     x = range(1, len(y_pred[0]) + 1)
 
-    plt.figure(1)
-    plt.title("copper price forecast model evaluating")
-    plt.xlabel('samples')
-    plt.ylabel('actual price vs. predict price')
+    fig, axes = plt.subplots(nrows=fig_row_num, ncols=fig_col_num, sharex=True, sharey=True)
+    fig.suptitle('copper price forecast model evaluating - x:samples, y:prices - blue:act, yellow:pre')
 
-    for i in range(step_len):
-        plt.subplot(fig_row_no, fig_col_no, i + 1)
-        plt.title("day - " + str(i+1))
-
-        plt.grid(x)
-        plt.plot(x, y_true[i], '-', label='act')
-        plt.plot(x, y_pred[i], '-', label='pre')
-
-        plt.legend(loc='upper right')
+    i = 0
+    for row in axes:
+        for col in row:
+            if i < step_len:
+                col.set_title("day - " + str(i + 1))
+                col.plot(x, y_true[i], '-', label='act')
+                col.plot(x, y_pred[i], '-', label='pre')
+                # 隐藏legend
+                # col.legend(loc='upper right')
+                i += 1
+    fig.tight_layout()
     plt.show()
 
 
