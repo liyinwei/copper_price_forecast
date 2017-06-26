@@ -165,8 +165,8 @@ def main():
 
     print('> Loading data... ')
 
-    # sin: sin.csv; stock: stock.csv; copper: co.csv
-    X_train, y_train, X_test, y_test = load_data('co.csv')
+    # sin: sin.csv; stock: stock.csv; copper: co_lstm.csv
+    X_train, y_train, X_test, y_test = load_data('co_lstm.csv')
 
     print('> Data Loaded. Compiling...')
 
