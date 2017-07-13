@@ -21,7 +21,7 @@ def read_data_from_mysql(sql):
     conn = None
     try:
         conn = mysql.connector.connect(host=const.HOST, user=const.USER, password=const.PASSWORD, database=const.DATABASE,
-                                       use_unicode=True)
+                                       use_unicode=True, charset='utf8')
         df = pd.read_sql(sql, conn)
         return df
     except Exception as e:
