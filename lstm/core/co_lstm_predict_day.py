@@ -9,6 +9,7 @@
 """
 
 import time
+import sys
 
 import numpy as np
 import pandas as pd
@@ -127,6 +128,12 @@ def load_data():
     # 训练数据集数量
     train_samples_num = int(len(data) * Conf.TRAIN_SAMPLES_RATE)
 
+    # 若样本数量不足，会导致测试数据集为空
+    if train_samples_num + Conf.SEQ_LEN >= len(data):
+        print("Lack of samples, u can get more samples or decrease the value of SQL_LEN to avoid the error.\n"
+              "System will exit without any other logs.")
+        sys.exit(0)
+
     # 提取_X_train，_X_test，_y_train，_y_test
     _X_train = np.array(seq_features[:train_samples_num])
     _X_test = np.array(seq_features[train_samples_num:])
@@ -157,7 +164,7 @@ def inverse_normalise_y(scaler, scalerd_y):
     return scaler.inverse_transform(scalerd_y)
 
 
-def normalise_X(data):
+def normalise_x(data):
     """
     数据标准化
     """
