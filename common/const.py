@@ -33,9 +33,9 @@ class Const:
     # 数据库连接host
     HOST = 'mysqlhost'
     # 数据库访问用户名
-    USER = 'cvte'
+    USER = 'username'
     # 数据库访问密码
-    PASSWORD = 'cvte@cvte'
+    PASSWORD = 'password'
     # 数据库名称
     DATABASE = 'dataset'
 
